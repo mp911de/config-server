@@ -1,0 +1,7 @@
+<configServer>
+    <repositories refresh="60" refreshUnit="MINUTES">
+        <repository id="myrepo" type="LOCAL">
+            <localWorkDirectory>${basedir}/example</localWorkDirectory>
+        </repository>
+    </repositories>
+</configServer>

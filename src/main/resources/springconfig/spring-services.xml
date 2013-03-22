@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+    <bean id="mbeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean"/>
+
+    <bean id="exporter" class="org.springframework.jmx.export.MBeanExporter">
+        <property name="autodetect" value="true"/>
+        <property name="server" ref="mbeanServer"/>
+    </bean>
+
+    <bean id="configFactory" class="de.paluch.configserver.spring.ConfigFactory">
+        <property name="configLocation" value="${repositories.config:classpath:config.xml}"/>
+        <property name="singleton" value="true"/>
+    </bean>
+
+    <bean id="repositoryResolverFactory" class="de.paluch.configserver.spring.RepositoryResolverFactory">
+        <property name="singleton" value="true"/>
+    </bean>
+
+    <bean id="repositoryService" class="de.paluch.configserver.service.RepositoryService"/>
+    <bean id="configServerResource" class="de.paluch.configserver.rest.ConfigResource"/>
+    <bean id="repositoryUpdaterExport" class="de.paluch.configserver.service.RepositoryUpdaterExport"/>
+
+    <bean name="updateJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+        <property name="jobClass" value="de.paluch.configserver.repository.updater.RepositoryUpdaterJob"/>
+        <property name="durability" value="true" />
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="repositoryResolver" value-ref="repositoryResolverFactory"/>
+                <entry key="repositoryUpdaterExport" value-ref="repositoryUpdaterExport"/>
+            </map>
+        </property>
+    </bean>
+
+    <bean id="updateRpcDispatcher" scope="singleton"
+          class="de.paluch.configserver.spring.jgroups.RpcDispatcherFactory">
+        <property name="serverObject" ref="repositoryUpdaterExport"/>
+        <property name="clusterName" value="ConfigMWUpdater"/>
+        <property name="jgroupsconfig" value="classpath:jgroups-tcp.xml"/>
+    </bean>
+
+
+    <bean id="updateJobTrigger" class="de.paluch.configserver.spring.CustomSimpleTriggerFactory">
+        <property name="jobDetail" ref="updateJobDetail"/>
+        <property name="configuration" ref="configFactory"/>
+        <property name="startDelay" value="10000"/>
+    </bean>
+
+    <!-- *** Start Quartz engine *** -->
+    <bean id="quartzScheduler" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <property name="autoStartup" value="true"/>
+        <property name="triggers">
+            <list>
+                <ref bean="updateJobTrigger"/>
+            </list>
+        </property>
+        <property name="quartzProperties">
+            <props>
+                <!-- ThreadPool -->
+                <prop key="org.quartz.threadPool.class">org.quartz.simpl.SimpleThreadPool</prop>
+                <prop key="org.quartz.threadPool.threadCount">4</prop>
+            </props>
+        </property>
+    </bean>
+</beans>

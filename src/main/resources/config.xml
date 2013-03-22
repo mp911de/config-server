@@ -1,0 +1,10 @@
+<configServer>
+    <repositories refresh="60" refreshUnit="MINUTES">
+        <repository id="myrepo" type="SVN">
+            <localWorkDirectory>/Entwicklung/cfs/myrepo</localWorkDirectory>
+            <remoteUrl>https://svn.server.url/svn/repor</remoteUrl>
+            <username>username</username>
+            <password>password</password>
+        </repository>
+    </repositories>
+</configServer>
