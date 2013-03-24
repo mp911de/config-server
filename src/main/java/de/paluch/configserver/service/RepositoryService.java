@@ -33,6 +33,8 @@ public class RepositoryService {
     @Autowired
     private RpcDispatcher rpcDispatcher;
 
+    private ResourceFinder finder = new ResourceFinder();
+
     /**
      * Schedule Update Repository using JGroups.
      * @param repositoryId
@@ -75,7 +77,6 @@ public class RepositoryService {
                                      String remoteAddr) throws IOException {
 
         FileRepository repo = repositoryResolver.getRepository(repositoryId);
-        ResourceFinder finder = new ResourceFinder();
 
         RepositoryArtifact artifact = getRepositoryArtifact(artifactId, repo);
         String environment = getEnvironment(remoteAddr, finder, artifact);
@@ -85,7 +86,7 @@ public class RepositoryService {
             throw new NotFoundException("Cannot find file " + filename);
         }
 
-        return null;
+        return result;
     }
 
     private String getEnvironment(String remoteAddr, ResourceFinder finder, RepositoryArtifact artifact) {
