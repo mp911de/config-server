@@ -53,7 +53,7 @@ public class ConfigResource {
 
         File file = resource.getFile();
 
-        URI location =  builder.build(repositoryId, resource.getArtifactId(), resource.getEnvironment(), resource.getVersion(),
+        URI location =  builder.build(repositoryId, resource.getArtifactId(), resource.getVersion(),  resource.getEnvironment(),
                 file.getName());
 
         return Response.seeOther(location).build();
@@ -78,7 +78,7 @@ public class ConfigResource {
     }
 
     @GET
-    @Path("repositories/{repositoryId}/{artifactId}/{environment}/{version}/{filename}")
+    @Path("repositories/{repositoryId}/{artifactId}/{version}/{environment}/{filename}")
     public Response getFileContent(@PathParam("repositoryId") String repositoryId,
                                    @PathParam("artifactId") String artifactId,
                                    @PathParam("environment") String environment,

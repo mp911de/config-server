@@ -74,7 +74,7 @@ public class ConfigResourceTest {
         ClientResponse<?> response = request.get();
 
         assertEquals(303, response.getStatus());
-        assertEquals("http://localhost:" + port + "/repositories/myrepo/artifact/qa/vers/thefile", response.getLocation().getHref());
+        assertEquals("http://localhost:" + port + "/repositories/myrepo/artifact/vers/qa/thefile", response.getLocation().getHref());
     }
 
     @Test
@@ -89,7 +89,7 @@ public class ConfigResourceTest {
         ClientResponse<?> response = request.get();
 
         assertEquals(303, response.getStatus());
-        assertEquals("http://localhost:" + port + "/repositories/myrepo/artifact/qa/vers/thefile", response.getLocation().getHref());
+        assertEquals("http://localhost:" + port + "/repositories/myrepo/artifact/vers/qa/thefile", response.getLocation().getHref());
     }
 
     @Test
@@ -122,7 +122,7 @@ public class ConfigResourceTest {
 
         when(repositoryService.getInputStream("myrepo", "artifact", "vers", "qa", "thefile")).thenReturn(bais);
 
-        ClientRequest request = new ClientRequest("http://localhost:" + port + "/repositories/myrepo/artifact/qa/vers/thefile");
+        ClientRequest request = new ClientRequest("http://localhost:" + port + "/repositories/myrepo/artifact/vers/qa/thefile");
         ClientResponse<String> response = request.get(String.class);
 
         assertEquals(200, response.getStatus());

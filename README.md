@@ -69,7 +69,7 @@ address. In a successful request the response performs a redirect to the real re
 Returns the caller/client IP address with hostname/FQDN. Very handy to find out your DNS reverse name.
 
 
-**GET /repositories/{repositoryId}/{artifactId}/{environment}/{version}/{filename}**
+**GET /repositories/{repositoryId}/{artifactId}/{version}/{environment}/{filename}**
 
 Static access to a file. This url points to the real resource and returns the file content.
 
