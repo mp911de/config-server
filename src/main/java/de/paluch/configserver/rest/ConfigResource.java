@@ -1,15 +1,13 @@
 package de.paluch.configserver.rest;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -29,7 +27,7 @@ public class ConfigResource {
     private RepositoryService repositoryService;
 
     @GET
-    @Path("dns/{repositoryId}/{artifactId}/{version}/{filename}")
+    @Path("dns/{repositoryId}/{artifactId}/{filename}")
     public Response getHostBasedRedirect(@PathParam("repositoryId") String repositoryId,
                                          @PathParam("artifactId") String artifactId,
                                          @PathParam("filename") String filename,
@@ -51,19 +49,20 @@ public class ConfigResource {
         FileResource resource = repositoryService.findResource(repositoryId, artifactId, version, filename,
                                                                request.getRemoteAddr());
 
-        URI location = uriInfo
-                .getBaseUriBuilder()
-                .path(getClass(), "getFileContent")
-                .build(repositoryId, resource.getArtifactId(), resource.getEnvironment(), resource.getVersion(),
-                       resource.getFile().getName());
+       UriBuilder builder = uriInfo.getBaseUriBuilder().path(getClass(), "getFileContent");
+
+        File file = resource.getFile();
+
+        URI location =  builder.build(repositoryId, resource.getArtifactId(), resource.getEnvironment(), resource.getVersion(),
+                file.getName());
 
         return Response.seeOther(location).build();
     }
 
     @GET
     @Path("dns")
-    @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-    public RequestHostDetails getHostname(@Context HttpServletRequest request, @Context UriInfo uriInfo) {
+    @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_XML })
+    public RequestHostDetails getHostname(@Context HttpServletRequest request) {
 
         ResourceFinder finder = new ResourceFinder();
         String fqdn = finder.getFqdn(request.getRemoteAddr());

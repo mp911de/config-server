@@ -1,6 +1,5 @@
 package de.paluch.configserver;
 
-import com.sun.tools.javac.resources.version;
 import de.paluch.configserver.model.config.ConfigRoot;
 import de.paluch.configserver.model.repository.FileResource;
 import de.paluch.configserver.repository.RepositoryResolver;
@@ -9,31 +8,40 @@ import de.paluch.configserver.service.ResourceFinder;
 import de.paluch.configserver.spring.ConfigFactory;
 import de.paluch.configserver.spring.RepositoryResolverFactory;
 import org.apache.commons.io.FileUtils;
+import org.jgroups.Address;
+import org.jgroups.JChannel;
+import org.jgroups.View;
+import org.jgroups.blocks.MethodCall;
+import org.jgroups.blocks.RequestOptions;
+import org.jgroups.blocks.RpcDispatcher;
 import org.junit.Assert;
-import static org.junit.Assert.assertSame;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
+
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.eq;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.expression.spel.support.ReflectionHelper;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StreamUtils;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Properties;
 
 import static org.hamcrest.Matchers.greaterThan;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 
 /**
  * @author <a href="mailto:mpaluch@paluch.biz">Mark Paluch</a>
@@ -47,6 +55,15 @@ public class RepositoryServiceTest {
 
     @Mock
     private ResourceFinder resourceFinder;
+
+    @Mock
+    private RpcDispatcher rpcDispatcher;
+
+    @Mock
+    private JChannel channel;
+
+    @Mock
+    private View view;
 
 
     @Before
@@ -84,5 +101,25 @@ public class RepositoryServiceTest {
 
         FileResource result = repositoryService.findResource("myrepo", "theArtifact", "theVersion", "config.properties", "localhost");
         assertSame(fileResource, result);
+    }
+
+
+    @Test
+    public void scheduleRepositoryUpdate() throws Exception {
+
+
+        when(rpcDispatcher.getChannel()).thenReturn(channel);
+        when(channel.getView()).thenReturn(view);
+        when(view.getMembers()).thenReturn(new ArrayList<Address>());
+
+        repositoryService.scheduleRepositoryUpdate("myrepo");
+
+        ArgumentCaptor<MethodCall> captor = ArgumentCaptor.forClass(MethodCall.class);
+
+        verify(rpcDispatcher).callRemoteMethodsWithFuture(anyList(), captor.capture(), any(RequestOptions.class));
+
+        MethodCall call = captor.getValue();
+        assertEquals("updateRepository", call.getName());
+        assertEquals("myrepo", call.getArgs()[0]);
     }
 }
