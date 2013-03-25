@@ -10,13 +10,12 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
@@ -25,6 +24,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.isNull;
 import static org.mockito.Mockito.*;
 
 /**
@@ -68,7 +68,7 @@ public class ConfigResourceTest {
         File file = new File("/tmp/thefile");
         fileResource.setFile(file);
 
-        when(repositoryService.findResource(eq("myrepo"), eq("artifact"),(String) isNull(), eq("thefile"), anyString())).thenReturn(fileResource);
+        when(repositoryService.findResource(eq("myrepo"), eq("artifact"), (String) isNull(), eq("thefile"), anyString())).thenReturn(fileResource);
 
         ClientRequest request = new ClientRequest("http://localhost:" + port + "/dns/myrepo/artifact/thefile");
         ClientResponse<?> response = request.get();
@@ -118,6 +118,15 @@ public class ConfigResourceTest {
     @Test
     public void testGetFileContent() throws Exception {
 
+        ByteArrayInputStream bais = new ByteArrayInputStream("blubb".getBytes());
+
+        when(repositoryService.getInputStream("myrepo", "artifact", "vers", "qa", "thefile")).thenReturn(bais);
+
+        ClientRequest request = new ClientRequest("http://localhost:" + port + "/repositories/myrepo/artifact/qa/vers/thefile");
+        ClientResponse<String> response = request.get(String.class);
+
+        assertEquals(200, response.getStatus());
+        assertEquals("blubb", response.getEntity());
     }
 
     @Test
