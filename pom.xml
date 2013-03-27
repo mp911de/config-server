@@ -308,7 +308,6 @@
                 </exclusion>
                 <exclusion>
                     <groupId>javax.activation</groupId>
-                    <artifactId>activation</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -335,22 +334,6 @@
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-spring</artifactId>
             <version>${org.jboss.resteasy.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-multipart-provider</artifactId>
-            <version>${org.jboss.resteasy.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>javax.servlet</groupId>
-                    <artifactId>servlet-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>javax.mail</groupId>
-                    <artifactId>mail</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
