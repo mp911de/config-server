@@ -8,6 +8,7 @@ import de.paluch.configserver.service.ResourceFinder;
 import de.paluch.configserver.spring.ConfigFactory;
 import de.paluch.configserver.spring.RepositoryResolverFactory;
 import org.apache.commons.io.FileUtils;
+import static org.hamcrest.Matchers.containsString;
 import org.jgroups.Address;
 import org.jgroups.JChannel;
 import org.jgroups.View;
@@ -91,6 +92,21 @@ public class RepositoryServiceTest {
     }
 
     @Test
+    public void getInputStreamAndParse() throws Exception {
+        InputStream result = repositoryService.getInputStream("myrepo", "theArtifact", "theVersion", "qa", "config.properties");
+        assertNotNull(result);
+        Properties p = new Properties();
+        p.load(result);
+
+        String password = p.getProperty("password");
+        String failword = p.getProperty("failword");
+
+        assertEquals("secret string", password);
+        assertThat(failword, containsString("ERROR:"));
+
+    }
+
+    @Test
     public void findResource() throws Exception {
 
         when(resourceFinder.findEnvironmentFromHost(any(Properties.class), eq("localhost"))).thenReturn("blubb");
@@ -121,5 +137,13 @@ public class RepositoryServiceTest {
         MethodCall call = captor.getValue();
         assertEquals("updateRepository", call.getName());
         assertEquals("myrepo", call.getArgs()[0]);
+    }
+
+    @Test
+    public void encrypt() throws Exception {
+
+        String result = repositoryService.encrypt("myrepo", "aes1", "secret string");
+        assertThat(result, containsString(":"));
+
     }
 }

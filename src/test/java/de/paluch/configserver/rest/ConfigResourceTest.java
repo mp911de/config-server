@@ -2,6 +2,7 @@ package de.paluch.configserver.rest;
 
 import de.paluch.configserver.RemoteUtil;
 import de.paluch.configserver.model.repository.FileResource;
+import de.paluch.configserver.model.rest.EncryptedResult;
 import de.paluch.configserver.service.RepositoryService;
 import de.paluch.configserver.service.ResourceFinder;
 import org.jboss.resteasy.client.ClientRequest;
@@ -17,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.Arrays;
@@ -140,5 +142,35 @@ public class ConfigResourceTest {
         ClientResponse<?> response = request.post();
 
         verify(repositoryService).scheduleRepositoryUpdate("myrepo");
+    }
+
+    @Test
+    public void testEncryptForm() throws Exception {
+
+        when(repositoryService.encrypt("myrepo", "aes1", "blubb")).thenReturn("zack");
+
+        ClientRequest request = new ClientRequest("http://localhost:" + port +
+                                                          "/repositories/myrepo/encryptions/aes1");
+
+        MultivaluedMap<String, String> formParameters = request.getFormParameters();
+        formParameters.putSingle("plaintext", "blubb");
+
+
+        ClientResponse<EncryptedResult> response = request.post(EncryptedResult.class);
+        assertEquals("zack", response.getEntity().getResult());
+
+    }
+
+    @Test
+    public void testEncryptJSON() throws Exception {
+
+        when(repositoryService.encrypt("myrepo", "aes1", "blubb")).thenReturn("zack");
+
+        ClientRequest request = new ClientRequest("http://localhost:" + port +
+                                                          "/repositories/myrepo/encryptions/aes1");
+        request.body(MediaType.APPLICATION_JSON, "blubb");
+        ClientResponse<EncryptedResult> response = request.post(EncryptedResult.class);
+        assertEquals("zack", response.getEntity().getResult());
+
     }
 }
