@@ -1,108 +1,103 @@
 package de.paluch.configserver.service;
 
+import de.paluch.configserver.model.config.ConfigEncryption;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 /**
  * @author <a href="mailto:mpaluch@paluch.biz">Mark Paluch</a>
  * @since 10.01.13 10:53
  */
-public class InputStreamBuilder
-{
+public class InputStreamBuilder {
 
-	public static final String TYPE_PROPERTIES = ".properties";
-	public static final String TYPE_GENERIC = ".";
+    public static final String TYPE_PROPERTIES = ".properties";
+    public static final String TYPE_GENERIC = ".";
 
-	private File artifact;
-	private File environment;
-	private File version;
-	private File file;
+    private File artifact;
+    private File environment;
+    private File version;
+    private File file;
 
-	private String type = TYPE_GENERIC;
+    private String type = TYPE_GENERIC;
 
-	public static InputStreamBuilder newInstance()
-	{
+    private List<ConfigEncryption> encryptions;
 
-		return new InputStreamBuilder();
-	}
+    public static InputStreamBuilder newInstance() {
 
-	public InputStreamBuilder artifact(File file)
-	{
+        return new InputStreamBuilder();
+    }
 
-		artifact = file;
-		return this;
-	}
+    public InputStreamBuilder artifact(File file) {
 
-	public InputStreamBuilder environment(File file)
-	{
+        artifact = file;
+        return this;
+    }
 
-		environment = file;
-		return this;
-	}
+    public InputStreamBuilder environment(File file) {
 
-	public InputStreamBuilder version(File file)
-	{
+        environment = file;
+        return this;
+    }
 
-		version = file;
-		return this;
-	}
+    public InputStreamBuilder version(File file) {
 
-	public InputStreamBuilder file(File file)
-	{
-		this.file = file;
-		return this;
-	}
+        version = file;
+        return this;
+    }
 
-	public InputStreamBuilder guessType()
-	{
+    public InputStreamBuilder file(File file) {
+        this.file = file;
+        return this;
+    }
 
-		if (file == null)
-		{
-			throw new IllegalStateException("file not set");
-		}
+    public InputStreamBuilder guessType() {
 
-		type = TYPE_GENERIC;
+        if (file == null) {
+            throw new IllegalStateException("file not set");
+        }
 
-		if (file.getName().toLowerCase().endsWith(TYPE_PROPERTIES))
-		{
-			type = TYPE_PROPERTIES;
-		}
+        type = TYPE_GENERIC;
 
-		return this;
-	}
+        if (file.getName().toLowerCase().endsWith(TYPE_PROPERTIES)) {
+            type = TYPE_PROPERTIES;
+        }
 
-	public InputStream build() throws IOException
-	{
+        return this;
+    }
 
-		if (version == null)
-		{
-			throw new IllegalStateException("version not set");
-		}
+    public InputStreamBuilder withEncryptions(List<ConfigEncryption> encryptions) {
+        this.encryptions = encryptions;
+        return this;
+    }
 
-		if (artifact == null)
-		{
-			throw new IllegalStateException("artifact not set");
-		}
+    public InputStream build() throws IOException {
 
-		if (environment == null)
-		{
-			throw new IllegalStateException("environment not set");
-		}
+        if (version == null) {
+            throw new IllegalStateException("version not set");
+        }
 
-		if (file == null)
-		{
-			throw new IllegalStateException("file not set");
-		}
+        if (artifact == null) {
+            throw new IllegalStateException("artifact not set");
+        }
 
-		if (type.equals(TYPE_PROPERTIES))
-		{
-			return new OverridingPropertiesInputStreamBuilder(file.getName(), artifact,
-					version, environment).getInputStream();
-		}
-		return new FileInputStream(file);
+        if (environment == null) {
+            throw new IllegalStateException("environment not set");
+        }
 
-	}
+        if (file == null) {
+            throw new IllegalStateException("file not set");
+        }
+
+        if (type.equals(TYPE_PROPERTIES)) {
+            return new OverridingPropertiesInputStreamBuilder(file.getName(), encryptions, artifact, version, environment).getInputStream();
+        }
+        return new FileInputStream(file);
+
+    }
+
 
 }

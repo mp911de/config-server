@@ -6,7 +6,6 @@
     <bean id="mbeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean"/>
 
     <bean id="exporter" class="org.springframework.jmx.export.MBeanExporter">
-        <property name="autodetect" value="true"/>
         <property name="server" ref="mbeanServer"/>
     </bean>
 
@@ -18,6 +17,8 @@
     <bean id="repositoryResolverFactory" class="de.paluch.configserver.spring.RepositoryResolverFactory">
         <property name="singleton" value="true"/>
     </bean>
+
+    <bean id="resourceFinder" class="de.paluch.configserver.service.ResourceFinder" />
 
     <bean id="repositoryService" class="de.paluch.configserver.service.RepositoryService"/>
     <bean id="configServerResource" class="de.paluch.configserver.rest.ConfigResource"/>

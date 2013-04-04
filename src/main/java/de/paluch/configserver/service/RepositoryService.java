@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import de.paluch.configserver.model.config.ConfigServerRepository;
 import org.apache.log4j.Logger;
 import org.jgroups.blocks.MethodCall;
 import org.jgroups.blocks.RequestOptions;
@@ -33,7 +34,8 @@ public class RepositoryService {
     @Autowired
     private RpcDispatcher rpcDispatcher;
 
-    private ResourceFinder finder = new ResourceFinder();
+    @Autowired
+    private ResourceFinder finder;
 
     /**
      * Schedule Update Repository using JGroups.
@@ -44,11 +46,9 @@ public class RepositoryService {
 
         repositoryResolver.getRepository(repositoryId);
 
-        MethodCall call = new MethodCall("updateRepository", new Object[] { repositoryId },
-                                         new Class[] { String.class });
+        MethodCall call = new MethodCall("updateRepository", new Object[] { repositoryId }, new Class[] { String.class });
 
-        rpcDispatcher.callRemoteMethodsWithFuture(rpcDispatcher.getChannel().getView().getMembers(), call,
-                                                  new RequestOptions());
+        rpcDispatcher.callRemoteMethodsWithFuture(rpcDispatcher.getChannel().getView().getMembers(), call, new RequestOptions());
     }
 
 
@@ -56,6 +56,7 @@ public class RepositoryService {
                                       String filename) throws IOException {
 
         FileRepository repo = repositoryResolver.getRepository(repositoryId);
+        ConfigServerRepository config = repositoryResolver.getConfig(repositoryId);
 
 
         File repoFile = new File(repo.getLocalWorkDir());
@@ -66,7 +67,7 @@ public class RepositoryService {
 
         if (theFile.exists()) {
 
-            return InputStreamBuilder.newInstance().artifact(artifactFile).
+            return InputStreamBuilder.newInstance().artifact(artifactFile).withEncryptions(config.getEncryptions()).
                     environment(envFile).version(versionFile).file(theFile).guessType().build();
         }
 
@@ -114,4 +115,8 @@ public class RepositoryService {
         return artifact;
     }
 
+    public String encrypt(String repositoryId, String encryptionId, String plaintext) {
+        ConfigServerRepository repositoryConfig = repositoryResolver.getConfig(repositoryId);
+        return Encryption.encrypt(encryptionId, plaintext, repositoryConfig.getEncryptions());
+    }
 }

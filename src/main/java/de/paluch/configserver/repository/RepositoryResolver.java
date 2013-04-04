@@ -16,8 +16,7 @@ import java.util.Map;
 public class RepositoryResolver {
 
     private Map<String, FileRepository> repositories = new HashMap<String, FileRepository>();
-    private Map<String, AbstractRepositoryUpdater> repositoryUpdaters = new HashMap<String,
-            AbstractRepositoryUpdater>();
+    private Map<String, AbstractRepositoryUpdater> repositoryUpdaters = new HashMap<String, AbstractRepositoryUpdater>();
     private Map<String, ConfigServerRepository> repositoryConfig = new HashMap<String, ConfigServerRepository>();
 
     public void addRepository(String id, FileRepository fileRepository, ConfigServerRepository config) {
@@ -42,6 +41,15 @@ public class RepositoryResolver {
 
         if (containsUpdater(id)) {
             return repositoryUpdaters.get(id);
+        }
+
+        throw new NotFoundException("Cannot find Repository " + id);
+    }
+
+    public ConfigServerRepository getConfig(String id) {
+
+        if (containsUpdater(id)) {
+            return repositoryConfig.get(id);
         }
 
         throw new NotFoundException("Cannot find Repository " + id);

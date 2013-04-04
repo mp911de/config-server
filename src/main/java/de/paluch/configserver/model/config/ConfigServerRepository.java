@@ -4,6 +4,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
+import java.util.List;
 
 /**
  * @author <a href="mailto:mpaluch@paluch.biz">Mark Paluch</a>
@@ -29,6 +31,10 @@ public class ConfigServerRepository {
 
     @XmlElement(name = "password")
     private String password;
+
+    @XmlElement(name = "encryption")
+    @XmlElementWrapper(name = "security")
+    private List<ConfigEncryption> encryptions;
 
 
     public String getId() {
@@ -77,5 +83,13 @@ public class ConfigServerRepository {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public List<ConfigEncryption> getEncryptions() {
+        return encryptions;
+    }
+
+    public void setEncryptions(List<ConfigEncryption> encryptions) {
+        this.encryptions = encryptions;
     }
 }

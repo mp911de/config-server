@@ -1,11 +1,17 @@
 package de.paluch.configserver.service;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import de.paluch.configserver.model.repository.FileResource;
 import org.apache.log4j.Logger;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.xbill.DNS.Address;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:mpaluch@paluch.biz">Mark Paluch</a>
@@ -15,15 +21,36 @@ public class ResourceFinder {
 
     private Logger log = Logger.getLogger(getClass());
 
-    public FileResource findResource(List<FileResource> resources, String environment,
-                                     String version,
+    private LoadingCache<String, String> addressToFqdnCache;
+
+    public ResourceFinder() {
+        addressToFqdnCache = CacheBuilder.newBuilder().expireAfterWrite(10, TimeUnit.MINUTES).
+                maximumSize(4096).build(new CacheLoader<String, String>() {
+
+            @Override
+            public String load(String key) throws Exception {
+                try {
+                    String fqdn = Address.getHostName(Address.getByName(key));
+                    if (fqdn.endsWith(".")) {
+                        fqdn = fqdn.substring(0, fqdn.length() - 1);
+                    }
+                    return fqdn;
+                } catch (Exception e) {
+                    log.warn("Remote: " + key + ", Exception: " + e.getMessage());
+                    return null;
+                }
+            }
+        });
+    }
+
+
+    public FileResource findResource(List<FileResource> resources, String environment, String version,
                                      String filename) {
 
         List<FileResource> matching = new ArrayList<FileResource>();
 
         for (FileResource resource : resources) {
-            if (resource.getEnvironment().equals(environment) &&
-                    resource.getRelativeName().equals(filename)) {
+            if (resource.getEnvironment().equals(environment) && resource.getRelativeName().equals(filename)) {
                 matching.add(resource);
             }
         }
@@ -104,15 +131,11 @@ public class ResourceFinder {
     }
 
     public String getFqdn(String remoteAddr) {
-        String fqdn = null;
         try {
-            fqdn = Address.getHostName(Address.getByName(remoteAddr));
-            if (fqdn.endsWith(".")) {
-                fqdn = fqdn.substring(0, fqdn.length() - 1);
-            }
-        } catch (Exception e) {
+            return addressToFqdnCache.get(remoteAddr);
+        } catch (ExecutionException e) {
             log.warn("Remote: " + remoteAddr + ", Exception: " + e.getMessage());
         }
-        return fqdn;
+        return null;
     }
 }

@@ -165,8 +165,6 @@
     </issueManagement>
 
     <developers>
-
-
         <developer>
             <id>mpaluch</id>
             <name>Mark Paluch</name>
@@ -176,7 +174,6 @@
             </roles>
             <timezone>+1</timezone>
         </developer>
-
     </developers>
 
     <dependencies>
@@ -201,6 +198,11 @@
             <version>${org.springframework.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>14.0.1</version>
+        </dependency>
 
         <!-- Test Deps -->
         <dependency>

@@ -1,7 +1,11 @@
 package de.paluch.configserver.service;
 
+import de.paluch.configserver.model.config.ConfigEncryption;
+
 import java.io.*;
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:mpaluch@paluch.biz">Mark Paluch</a>
@@ -10,10 +14,13 @@ import java.util.Properties;
 public class OverridingPropertiesInputStreamBuilder {
 
     private Properties properties = new Properties();
+    private List<ConfigEncryption> encryptions;
 
-    public OverridingPropertiesInputStreamBuilder(String baseFileName, File... directories) throws IOException {
+    public OverridingPropertiesInputStreamBuilder(String baseFileName, List<ConfigEncryption> encryptions,
+                                                  File... directories) throws IOException {
 
         readFiles(baseFileName, directories);
+        this.encryptions = encryptions;
 
     }
 
@@ -43,8 +50,31 @@ public class OverridingPropertiesInputStreamBuilder {
     public InputStream getInputStream() throws IOException {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        properties.store(baos, null);
 
+        decryptValues(properties);
+
+        properties.store(baos, null);
         return new ByteArrayInputStream(baos.toByteArray());
+    }
+
+    /**
+     * Decrypt Properties-File.
+     * @param properties
+     */
+    private void decryptValues(Properties properties) {
+
+        Set<String> names = properties.stringPropertyNames();
+        for (String key : names) {
+            String value = properties.getProperty(key);
+            if (Encryption.isEncrypted(value)) {
+
+                try {
+                    String decrypted = Encryption.decrypt(value, encryptions);
+                    properties.setProperty(key, decrypted);
+                } catch (Exception e) {
+                    properties.setProperty(key, "ERROR: " + e.getMessage());
+                }
+            }
+        }
     }
 }

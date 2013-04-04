@@ -2,6 +2,25 @@
     <repositories refresh="60" refreshUnit="MINUTES">
         <repository id="myrepo" type="LOCAL">
             <localWorkDirectory>${basedir}/example</localWorkDirectory>
+
+            <security>
+                <encryption id="aes1">
+                    <cipher>AES/CBC/PKCS5Padding</cipher>
+                    <key>BTwdBhcFJd5Ls7DW82oTuQ==</key>
+                    <ivSpec>ZB0zQr9c9LbtMHS8fgkfKA==</ivSpec>
+                </encryption>
+
+                <encryption id="des1">
+                    <cipher>DES/CBC/PKCS7Padding</cipher>
+                    <key>l6tKf0Z8m0A=</key>
+                    <ivSpec>ZB0zQr9c9LbtMHS8fgkfKA==</ivSpec>
+                </encryption>
+
+                <encryption id="Blowfish1">
+                    <cipher>Blowfish</cipher>
+                    <key>ZB0zQr9c9LbtMHS8fgkfKA==</key>
+                </encryption>
+            </security>
         </repository>
     </repositories>
 </configServer>
