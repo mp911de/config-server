@@ -1,5 +1,6 @@
 package de.paluch.configserver.rest;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -9,8 +10,10 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
+import de.paluch.configserver.model.rest.EncryptedResult;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.paluch.configserver.model.repository.FileResource;
@@ -28,13 +31,15 @@ public class ConfigResource {
     @Autowired
     private RepositoryService repositoryService;
 
+    @Autowired
+    private ResourceFinder resourceFinder;
+
     @GET
-    @Path("dns/{repositoryId}/{artifactId}/{version}/{filename}")
+    @Path("dns/{repositoryId}/{artifactId}/{filename}")
     public Response getHostBasedRedirect(@PathParam("repositoryId") String repositoryId,
                                          @PathParam("artifactId") String artifactId,
-                                         @PathParam("filename") String filename,
-                                         @Context HttpServletRequest request, @Context UriInfo uriInfo)
-            throws IOException {
+                                         @PathParam("filename") String filename, @Context HttpServletRequest request,
+                                         @Context UriInfo uriInfo) throws IOException {
 
         return getHostAndVersionBasedRedirect(repositoryId, artifactId, null, filename, request, uriInfo);
     }
@@ -48,26 +53,24 @@ public class ConfigResource {
                                                    @Context HttpServletRequest request, @Context UriInfo uriInfo)
             throws IOException {
 
-        FileResource resource = repositoryService.findResource(repositoryId, artifactId, version, filename,
-                                                               request.getRemoteAddr());
+        FileResource resource = repositoryService.findResource(repositoryId, artifactId, version, filename, request.getRemoteAddr());
 
-        URI location = uriInfo
-                .getBaseUriBuilder()
-                .path(getClass(), "getFileContent")
-                .build(repositoryId, resource.getArtifactId(), resource.getEnvironment(), resource.getVersion(),
-                       resource.getFile().getName());
+        UriBuilder builder = uriInfo.getBaseUriBuilder().path(getClass(), "getFileContent");
+
+        File file = resource.getFile();
+
+        URI location = builder.build(repositoryId, resource.getArtifactId(), resource.getVersion(), resource.getEnvironment(), file.getName());
 
         return Response.seeOther(location).build();
     }
 
     @GET
     @Path("dns")
-    @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-    public RequestHostDetails getHostname(@Context HttpServletRequest request, @Context UriInfo uriInfo) {
+    @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_XML })
+    public RequestHostDetails getHostname(@Context HttpServletRequest request) {
 
-        ResourceFinder finder = new ResourceFinder();
-        String fqdn = finder.getFqdn(request.getRemoteAddr());
-        String hostname = finder.getHostname(fqdn);
+        String fqdn = resourceFinder.getFqdn(request.getRemoteAddr());
+        String hostname = resourceFinder.getHostname(fqdn);
 
         RequestHostDetails result = new RequestHostDetails();
 
@@ -79,15 +82,13 @@ public class ConfigResource {
     }
 
     @GET
-    @Path("repositories/{repositoryId}/{artifactId}/{environment}/{version}/{filename}")
+    @Path("repositories/{repositoryId}/{artifactId}/{version}/{environment}/{filename}")
     public Response getFileContent(@PathParam("repositoryId") String repositoryId,
                                    @PathParam("artifactId") String artifactId,
-                                   @PathParam("environment") String environment,
-                                   @PathParam("version") String version, @PathParam("filename") String filename)
-            throws IOException {
+                                   @PathParam("environment") String environment, @PathParam("version") String version,
+                                   @PathParam("filename") String filename) throws IOException {
 
-        InputStream theStream = repositoryService.getInputStream(repositoryId, artifactId, version, environment,
-                                                                 filename);
+        InputStream theStream = repositoryService.getInputStream(repositoryId, artifactId, version, environment, filename);
 
         return Response.ok(theStream, MediaType.APPLICATION_OCTET_STREAM).build();
     }
@@ -98,5 +99,31 @@ public class ConfigResource {
 
         repositoryService.scheduleRepositoryUpdate(repositoryId);
         return Response.ok("OK - SCHEDULED", MediaType.TEXT_PLAIN_TYPE).build();
+    }
+
+    @POST
+    @Path("repositories/{repositoryId}/encryptions/{encryptionId}")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+    public EncryptedResult encryptUsingForm(@PathParam("repositoryId") String repositoryId,
+                                            @PathParam("encryptionId") String encryptionId,
+                                            @FormParam("plaintext") String plaintext) throws Exception {
+
+        String result = repositoryService.encrypt(repositoryId, encryptionId, plaintext);
+        return new EncryptedResult(result);
+
+    }
+
+    @POST
+    @Path("repositories/{repositoryId}/encryptions/{encryptionId}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+    public EncryptedResult encryptUsingJSON(@PathParam("repositoryId") String repositoryId,
+                                            @PathParam("encryptionId") String encryptionId, String plaintext)
+            throws Exception {
+
+        String result = repositoryService.encrypt(repositoryId, encryptionId, plaintext);
+        return new EncryptedResult(result);
+
     }
 }

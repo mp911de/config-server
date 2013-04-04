@@ -48,7 +48,7 @@ public class RepositoryResolver {
 
     public ConfigServerRepository getConfig(String id) {
 
-        if (containsUpdater(id)) {
+        if (repositoryConfig.containsKey(id)) {
             return repositoryConfig.get(id);
         }
 

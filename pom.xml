@@ -197,10 +197,21 @@
 
         <dependency>
             <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+            <version>${org.springframework.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
             <artifactId>spring-context-support</artifactId>
             <version>${org.springframework.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>14.0.1</version>
+        </dependency>
 
         <!-- Test Deps -->
         <dependency>
@@ -236,6 +247,12 @@
             <artifactId>junit</artifactId>
             <version>4.11</version>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>tjws</artifactId>
+            <version>${org.jboss.resteasy.version}</version>
         </dependency>
 
         <dependency>
@@ -286,6 +303,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.1.2</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-jaxb-provider</artifactId>
             <version>${org.jboss.resteasy.version}</version>
@@ -329,6 +352,12 @@
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-yaml-provider</artifactId>
             <version>${org.jboss.resteasy.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.mail</groupId>
+            <artifactId>mail</artifactId>
+            <version>1.4.4</version>
         </dependency>
 
         <dependency>

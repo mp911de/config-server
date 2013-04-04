@@ -3,10 +3,12 @@ package de.paluch.configserver.rest;
 import de.paluch.configserver.RemoteUtil;
 import de.paluch.configserver.model.repository.FileResource;
 import de.paluch.configserver.service.RepositoryService;
+import de.paluch.configserver.service.ResourceFinder;
 import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientResponse;
 import org.jboss.resteasy.plugins.server.tjws.TJWSEmbeddedJaxrsServer;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,6 +28,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.isNull;
 import static org.mockito.Mockito.*;
+import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * @author <a href="mailto:mpaluch@paluch.biz">Mark Paluch</a>
@@ -52,6 +55,8 @@ public class ConfigResourceTest {
         server.setPort(port);
         server.getDeployment().setResources((List) Arrays.asList(sut));
         server.start();
+
+        ReflectionTestUtils.setField(sut, "resourceFinder", new ResourceFinder());
 
     }
 
