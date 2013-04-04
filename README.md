@@ -35,7 +35,6 @@ config.xml
 * refreshUnit: SECONDS, MINUTES, DAYS
 * localWorkDirectory: the temporary, local storage
 * remoteUrl: Remote repository URL
-
 * security: Optional configuration for sensitive data encryption/decryption
 * encryption: One or more encryption configurations
 * encryption.id: Identifier (public reference id)
