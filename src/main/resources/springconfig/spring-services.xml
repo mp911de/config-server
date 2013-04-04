@@ -22,6 +22,8 @@
 
     <bean id="repositoryService" class="de.paluch.configserver.service.RepositoryService"/>
     <bean id="configServerResource" class="de.paluch.configserver.rest.ConfigResource"/>
+    <bean id="notFoundExceptionMapper" class="de.paluch.configserver.rest.NotFoundExceptionMapper"/>
+    <bean id="unconfiguredHostExceptionMapper" class="de.paluch.configserver.rest.UnconfiguredHostExceptionMapper"/>
     <bean id="repositoryUpdaterExport" class="de.paluch.configserver.service.RepositoryUpdaterExport"/>
 
     <bean name="updateJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">

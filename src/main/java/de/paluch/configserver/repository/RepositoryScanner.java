@@ -95,7 +95,7 @@ public class RepositoryScanner {
             result = full.substring(base.length());
         }
 
-        if (result.startsWith("/")) {
+        if (result.startsWith("/") ||  result.startsWith("\\")) {
             result = result.substring(1);
         }
 
